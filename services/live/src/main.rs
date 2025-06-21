@@ -1,8 +1,4 @@
-use std::{
-    env,
-    net::SocketAddr,
-    sync::{Arc, Mutex},
-};
+use std::{env, net::SocketAddr, sync::Arc};
 
 use axum::{
     http::{HeaderValue, Method},
@@ -12,6 +8,7 @@ use axum::{
 use compression::compress_sse;
 use dotenvy::dotenv;
 use serde_json::Value;
+use tokio::sync::RwLock;
 use tokio::{net::TcpListener, sync::broadcast};
 use tower_http::cors::CorsLayer;
 use tracing::info;
@@ -28,7 +25,7 @@ mod server {
 
 pub struct AppState {
     tx: broadcast::Sender<Message>,
-    state: Arc<Mutex<Value>>,
+    state: Arc<RwLock<Value>>,
 }
 
 #[tokio::main]
@@ -70,7 +67,7 @@ async fn main() -> Result<(), anyhow::Error> {
 }
 
 pub fn cors_layer() -> Result<CorsLayer, anyhow::Error> {
-    let origin = env::var("ORIGIN")?; // origins string split by semicolumn
+    let origin = env::var("ORIGIN")?;
 
     let origins = origin
         .split(';')
